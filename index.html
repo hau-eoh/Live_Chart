@@ -69,6 +69,7 @@
           }
         }
         var temperature = values[1126]?.value;
+        update_tmp_data(temperature);
         console.log('temperature value: ', temperature);
         // document.getElementById("temp").innerHTML = temperature;
         });
@@ -83,6 +84,10 @@
     </figure>
 
     <script>
+        function update_tmp_data(temperature){
+            var temperature = temperature;
+        }
+
         const onChartLoad = function () {
             const chart = this,
                 series = chart.series[0];
