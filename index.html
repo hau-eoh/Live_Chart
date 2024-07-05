@@ -15,8 +15,8 @@
         }
     
         #container {
-            height: cover;
-            width: cover;
+            height: contain;
+            width: contain;
         }
     
         .highcharts-data-table table {
@@ -102,11 +102,10 @@
 
                 series.addPoint([x, y], true, true);
                 console.log('incheck dataa', series.addPoint);
+                console.log('live chart onchart load', onChartLoad);
+                console.log('live chart SetInterval', setInterval);
             }, 1000);
         };
-
-        console.log('live chart onchart load', onChartLoad);
-        console.log('live chart SetInterval', setInterval);
 
         // Create the initial data
         const data = (function () {
@@ -120,8 +119,8 @@
                     // y: temperature
                 });
             }
+            console.log('live chart initial data', data);
             return data;
-            console.log('live chart data: ', data);
         }());
 
         // Plugin to add a pulsating marker on add point
