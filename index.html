@@ -9,14 +9,14 @@
     <style>
         .highcharts-figure,
         .highcharts-data-table table {
-            min-width: 320px;
-            max-width: 800px;
+            min-width: cover;
+            max-width: contain;
             margin: 1em auto;
         }
     
         #container {
-            height: contain;
-            width: contain;
+            height: cover;
+            width: cover;
         }
     
         .highcharts-data-table table {
@@ -65,13 +65,13 @@
         onConfiguration: (configuration) => {
           onValues: (value) => {
             var temp = values
-            console.log('value temp hua', temp);
+            // console.log('value temp hua', temp);
           }
         }
         var temperature = values[1126]?.value;
         update_tmp_data(temperature);
-        // update_tmp_data(1);
-        console.log('temperature value: ', temperature);
+        // update_tmp_data(Math.random());
+        // console.log('temperature value: ', temperature);
         // document.getElementById("temp").innerHTML = temperature;
         });
       eraWidget.ready();
@@ -87,7 +87,7 @@
     <script>
         function update_tmp_data(temperature){
             var temperature = temperature;
-            console.log('live chart getvalue temperature: ', temperature);
+            // console.log('live chart getvalue temperature: ', temperature);
         }
 
 
@@ -97,12 +97,12 @@
 
             setInterval(function () {
                 const x = (new Date()).getTime(), // current time
-                    // y = Math.random();
-                    y = temperature
+                    y = Math.random();
+                    // y = temperature
 
                 series.addPoint([x, y], true, true);
-                console.log('incheck dataa series', series);
-                console.log('live chart onchart load', series.addPoint);
+                // console.log('incheck dataa series', series);
+                // console.log('live chart onchart load', series.addPoint);
             }, 1000);
         };
 
@@ -118,7 +118,7 @@
                     // y: temperature
                 });
             }
-            console.log('live chart initial data', data);
+            // console.log('live chart initial data', data);
             return data;
         }());
 
@@ -126,8 +126,8 @@
         Highcharts.addEvent(Highcharts.Series, 'addPoint', e => {
             const point = e.point,
                 series = e.target;
-                console.log('live chart point data', point);
-                console.log('live chart point data', series);
+                // console.log('live chart point data', point);
+                // console.log('live chart point data', series);
 
             if (!series.pulse) {
                 series.pulse = series.chart.renderer.circle()
@@ -176,9 +176,9 @@
                     announcementFormatter: function (allSeries, newSeries, newPoint) {
                         if (newPoint) {
                             return 'New point added. Value: ' + newPoint.y;
-                            console.log('data update every time newPoint', newPoint);
-                            console.log('data update every time allSeries', allSeries);
-                            console.log('data update every time newSeries', newSeries);
+                            // console.log('data update every time newPoint', newPoint);
+                            // console.log('data update every time allSeries', allSeries);
+                            // console.log('data update every time newSeries', newSeries);
                         }
                         return false;
                     }
