@@ -70,7 +70,7 @@
         }
         var temperature = values[1126]?.value;
         update_tmp_data(temperature);
-        // update_tmp_data(133);
+        // update_tmp_data(1);
         console.log('temperature value: ', temperature);
         // document.getElementById("temp").innerHTML = temperature;
         });
@@ -97,13 +97,12 @@
 
             setInterval(function () {
                 const x = (new Date()).getTime(), // current time
-                    y = Math.random();
-                    // y = temperature
+                    // y = Math.random();
+                    y = temperature
 
                 series.addPoint([x, y], true, true);
-                console.log('incheck dataa', series.addPoint);
-                console.log('live chart onchart load', onChartLoad);
-                console.log('live chart SetInterval', setInterval);
+                console.log('incheck dataa series', series);
+                console.log('live chart onchart load', series.addPoint);
             }, 1000);
         };
 
