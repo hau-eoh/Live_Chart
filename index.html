@@ -127,6 +127,8 @@
         Highcharts.addEvent(Highcharts.Series, 'addPoint', e => {
             const point = e.point,
                 series = e.target;
+                console.log('live chart point data', point);
+                console.log('live chart point data', series);
 
             if (!series.pulse) {
                 series.pulse = series.chart.renderer.circle()
