@@ -69,8 +69,8 @@
           }
         }
         var temperature = values[1126]?.value;
-        // update_tmp_data(temperature);
-        update_tmp_data(133);
+        update_tmp_data(temperature);
+        // update_tmp_data(133);
         console.log('temperature value: ', temperature);
         // document.getElementById("temp").innerHTML = temperature;
         });
@@ -176,6 +176,9 @@
                     announcementFormatter: function (allSeries, newSeries, newPoint) {
                         if (newPoint) {
                             return 'New point added. Value: ' + newPoint.y;
+                            console.log('data update every time newPoint', newPoint);
+                            console.log('data update every time allSeries', allSeries);
+                            console.log('data update every time newSeries', newSeries);
                         }
                         return false;
                     }
