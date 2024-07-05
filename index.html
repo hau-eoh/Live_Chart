@@ -69,7 +69,8 @@
           }
         }
         var temperature = values[1126]?.value;
-        update_tmp_data(temperature);
+        // update_tmp_data(temperature);
+        update_tmp_data(133);
         console.log('temperature value: ', temperature);
         // document.getElementById("temp").innerHTML = temperature;
         });
@@ -86,7 +87,9 @@
     <script>
         function update_tmp_data(temperature){
             var temperature = temperature;
+            console.log('live chart getvalue temperature: ', temperature);
         }
+
 
         const onChartLoad = function () {
             const chart = this,
@@ -94,26 +97,31 @@
 
             setInterval(function () {
                 const x = (new Date()).getTime(), // current time
-                    // y = Math.random();
-                    y = temperature
+                    y = Math.random();
+                    // y = temperature
 
                 series.addPoint([x, y], true, true);
+                console.log('incheck dataa', series.addPoint);
             }, 1000);
         };
+
+        console.log('live chart onchart load', onChartLoad);
+        console.log('live chart SetInterval', setInterval);
 
         // Create the initial data
         const data = (function () {
             const data = [];
             const time = new Date().getTime();
 
-            for (let i = -19; i <= 0; i += 1) {
+            for (let i = -30; i <= 0; i += 1) {
                 data.push({
                     x: time + i * 1000,
-                    // y: Math.random()
-                    y: temperature
+                    y: Math.random()
+                    // y: temperature
                 });
             }
             return data;
+            console.log('live chart data: ', data);
         }());
 
         // Plugin to add a pulsating marker on add point
@@ -182,7 +190,7 @@
 
             yAxis: {
                 title: {
-                    text: 'Value'
+                    text: 'Temperature'
                 },
                 plotLines: [
                     {
@@ -208,7 +216,7 @@
 
             series: [
                 {
-                    name: 'Random data',
+                    name: 'Temperature data',
                     lineWidth: 2,
                     color: Highcharts.getOptions().colors[2],
                     data
