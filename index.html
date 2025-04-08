@@ -1,232 +1,145 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/exporting.js"></script>
-    <script src="https://code.highcharts.com/modules/export-data.js"></script>
-    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-    <style>
-        .highcharts-figure,
-        .highcharts-data-table table {
-            min-width: cover;
-            max-width: contain;
-            margin: 1em auto;
-        }
-    
-        #container {
-            height: cover;
-            width: cover;
-        }
-    
-        .highcharts-data-table table {
-            font-family: Verdana, sans-serif;
-            border-collapse: collapse;
-            border: 1px solid #ebebeb;
-            margin: 10px auto;
-            text-align: center;
-            width: 100%;
-            max-width: 500px;
-        }
-    
-        .highcharts-data-table caption {
-            padding: 1em 0;
-            font-size: 1.2em;
-            color: #555;
-        }
-    
-        .highcharts-data-table th {
-            font-weight: 600;
-            padding: 0.5em;
-        }
-    
-        .highcharts-data-table td,
-        .highcharts-data-table th,
-        .highcharts-data-table caption {
-            padding: 0.5em;
-        }
-    
-        .highcharts-data-table thead tr,
-        .highcharts-data-table tr:nth-child(even) {
-            background: #f8f8f8;
-        }
-    
-        .highcharts-data-table tr:hover {
-            background: #f1f7ff;
-        }
-    </style>
-</head>
-
-<body>
-    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Temperature Chart</title>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.1.3/src/index.js"></script>
+  </head>
+  <body>
+    <div id="container-live-chart"></div>
     <script>
-      const eraWidget = new EraWidget();
-      eraWidget.onValues((values) => {
-        onConfiguration: (configuration) => {
-          onValues: (value) => {
-            var temp = values
-            // console.log('value temp hua', temp);
+      const CHART_HEIGHT = 500;
+      const UPDATE_INTERVAL = 2000;
+      const ONE_DAY_AGO = 24 * 60 * 60 * 1000;
+
+      // Chart configuration object
+      const chartConfig = {
+        chart: {
+          height: CHART_HEIGHT,
+        },
+        time: {
+          timezoneOffset: -420, // UTC+7
+        },
+        rangeSelector: {
+          selected: 0,
+          buttonTheme: {
+            width: 50,
+          },
+          buttons: [
+            { type: "minute", count: 1, text: "1 min", title: "View 1 min" },
+            { type: "minute", count: 10, text: "10 min", title: "View 10 min" },
+            { type: "minute", count: 15, text: "15 min", title: "View 15 min" },
+            { type: "minute", count: 30, text: "30 min", title: "View 30 min" },
+            { type: "minute", count: 60, text: "60 min", title: "View 60 min" },
+          ],
+        },
+        plotOptions: {
+          series: {
+            turboThreshold: 10000,
+          },
+        },
+        navigator: {
+          enabled: false,
+        },
+        series: [
+          {
+            name: "Temperature",
+            data: [],
+          },
+        ],
+      };
+
+      class TemperatureChart {
+        constructor() {
+          this.container = document.getElementById("container-live-chart");
+          this.historyTemperature = [];
+          this.configTemperature = null;
+          this.valueTemperature = null;
+          this.chart = null;
+          this.eraWidget = null;
+          this.updateInterval = null;
+          this.updatedHistory = false;
+        }
+
+        initialize() {
+          this.setupChart();
+          this.setupEraWidget();
+          this.requestInitialData();
+          this.startUpdates();
+        }
+
+        setupChart() {
+          this.chart = Highcharts.stockChart(this.container, chartConfig);
+          this.container.style.height = `${CHART_HEIGHT}px`;
+        }
+
+        setupEraWidget() {
+          this.eraWidget = new EraWidget();
+          this.eraWidget.init({
+            mobileHeight: CHART_HEIGHT,
+            onConfiguration: (configuration) => {
+              this.configTemperature = configuration.realtime_configs[0];
+            },
+            onValues: (values) => {
+              this.valueTemperature =
+                values[this.configTemperature?.id]?.value || null;
+            },
+            onHistories: (history) => {
+              if (!this.updatedHistory && history[0]?.data?.length) {
+                this.historyTemperature = history[0].data;
+                this.updateChartData(true);
+                this.updatedHistory = true;
+              } else {
+                console.log("No historical data received");
+              }
+            },
+          });
+        }
+
+        requestInitialData() {
+          const endTime = Date.now();
+          const startTime = endTime - ONE_DAY_AGO; // Lấy dữ liệu 1 ngày trước
+          this.eraWidget.requestHistories(startTime, endTime);
+        }
+
+        updateChartData(isInitial = false) {
+          if (this.chart && this.chart.series[0]) {
+            this.chart.series[0].setData(this.historyTemperature, true);
+          } else {
+            console.error("Chart or series not initialized");
           }
         }
-        var temperature = values[1126]?.value;
-        update_tmp_data(temperature);
-        // update_tmp_data(Math.random());
-        // console.log('temperature value: ', temperature);
-        // document.getElementById("temp").innerHTML = temperature;
-        });
-      eraWidget.ready();
-    </script>
 
-    <figure class="highcharts-figure">
-        <div id="container"></div>
-        <p class="highcharts-description">
-            Chart showing data updating every second, with old data being removed.
-        </p>
-    </figure>
-
-    <script>
-        function update_tmp_data(temperature){
-            var temperature = temperature;
-            // console.log('live chart getvalue temperature: ', temperature);
+        startUpdates() {
+          this.updateInterval = setInterval(() => {
+            if (this.valueTemperature !== null) {
+              const newDataPoint = [Date.now(), this.valueTemperature];
+              this.historyTemperature.push(newDataPoint);
+              this.updateChartData();
+            }
+          }, UPDATE_INTERVAL);
         }
 
+        destroy() {
+          if (this.updateInterval) {
+            clearInterval(this.updateInterval);
+          }
+          if (this.chart) {
+            this.chart.destroy();
+          }
+        }
+      }
 
-        const onChartLoad = function () {
-            const chart = this,
-                series = chart.series[0];
+      document.addEventListener("DOMContentLoaded", () => {
+        const temperatureChart = new TemperatureChart();
+        temperatureChart.initialize();
 
-            setInterval(function () {
-                const x = (new Date()).getTime(), // current time
-                    y = Math.random();
-                    // y = temperature
-
-                series.addPoint([x, y], true, true);
-                // console.log('incheck dataa series', series);
-                // console.log('live chart onchart load', series.addPoint);
-            }, 1000);
-        };
-
-        // Create the initial data
-        const data = (function () {
-            const data = [];
-            const time = new Date().getTime();
-
-            for (let i = -30; i <= 0; i += 1) {
-                data.push({
-                    x: time + i * 1000,
-                    y: Math.random()
-                    // y: temperature
-                });
-            }
-            // console.log('live chart initial data', data);
-            return data;
-        }());
-
-        // Plugin to add a pulsating marker on add point
-        Highcharts.addEvent(Highcharts.Series, 'addPoint', e => {
-            const point = e.point,
-                series = e.target;
-                // console.log('live chart point data', point);
-                // console.log('live chart point data', series);
-
-            if (!series.pulse) {
-                series.pulse = series.chart.renderer.circle()
-                    .add(series.markerGroup);
-            }
-
-            setTimeout(() => {
-                series.pulse
-                    .attr({
-                        x: series.xAxis.toPixels(point.x, true),
-                        y: series.yAxis.toPixels(point.y, true),
-                        r: series.options.marker.radius,
-                        opacity: 1,
-                        fill: series.color
-                    })
-                    .animate({
-                        r: 20,
-                        opacity: 0
-                    }, {
-                        duration: 1000
-                    });
-            }, 1);
+        window.addEventListener("unload", () => {
+          temperatureChart.destroy();
         });
-
-
-        Highcharts.chart('container', {
-            chart: {
-                type: 'spline',
-                events: {
-                    load: onChartLoad
-                }
-            },
-
-            time: {
-                useUTC: false
-            },
-
-            title: {
-                text: 'Live random data'
-            },
-
-            accessibility: {
-                announceNewData: {
-                    enabled: true,
-                    minAnnounceInterval: 15000,
-                    announcementFormatter: function (allSeries, newSeries, newPoint) {
-                        if (newPoint) {
-                            return 'New point added. Value: ' + newPoint.y;
-                            // console.log('data update every time newPoint', newPoint);
-                            // console.log('data update every time allSeries', allSeries);
-                            // console.log('data update every time newSeries', newSeries);
-                        }
-                        return false;
-                    }
-                }
-            },
-
-            xAxis: {
-                type: 'datetime',
-                tickPixelInterval: 150,
-                maxPadding: 0.1
-            },
-
-            yAxis: {
-                title: {
-                    text: 'Temperature'
-                },
-                plotLines: [
-                    {
-                        value: 0,
-                        width: 1,
-                        color: '#808080'
-                    }
-                ]
-            },
-
-            tooltip: {
-                headerFormat: '<b>{series.name}</b><br/>',
-                pointFormat: '{point.x:%Y-%m-%d %H:%M:%S}<br/>{point.y:.2f}'
-            },
-
-            legend: {
-                enabled: false
-            },
-
-            exporting: {
-                enabled: false
-            },
-
-            series: [
-                {
-                    name: 'Temperature data',
-                    lineWidth: 2,
-                    color: Highcharts.getOptions().colors[2],
-                    data
-                }
-            ]
-        });
-
+      });
     </script>
-</body>
+  </body>
 </html>
